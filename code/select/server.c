@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
         // 初始化文件描述符集合
         FD_ZERO(&client_fdset);
         // 加入服务器描述符
-        FD_SET(serverfd, &client_sockfd);
+        FD_SET(serverfd, &client_fdset);
         // 设置超时时间30s
         tv.tv_sec = 30;
         tv.tv_usec = 0;
@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
         }
 
         // 检查是否有新的连接,如果有接收连接请求,accept,加入到client_sockfd.
-        if(FD_ISST(serverfd, &client_fdset)) {
+        if(FD_ISSET(serverfd, &client_fdset)) {
             struct sockaddr_in client_addr;
             size_t size = sizeof(struct sockaddr_in);
             int sock_client = accept(serverfd, (struct sockaddr*) (&client_addr), (unsigned int *)(&size));
