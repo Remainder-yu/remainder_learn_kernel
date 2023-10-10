@@ -1,40 +1,11 @@
-## 流socket
-
+# 流socket
 流socket与电话系统类似：
-![Alt text](./images/socket.png)
-
-### 监听接入连接：listen().
-listen系统调用将文件描述符sockfd引用的流socket标记为被动。
-
-### 接受连接：accept().
-accept系统调用在文件描述符sockfd引用的监听流socket上接受一个接入连接。
-如果在调用accept时不存在未决的连接，那么调用就会阻塞直到有连接请求为止。
-
-理解accept()的关键点是它会创建一个新的socket，并且正式这个socket会与执行connect对等的socket进行连接。
-
-![Alt text](./images/未决的socket连接.png)
-
-### 连接对等socket：connect()
-connect系统调用将文件描述符sockfd引用的主动socket连接到地址通过addr和addrlen指定的监听socket上。
-
-## select
-```c
-int select (int maxfdp, fd_set *readfds, fd_set *writefds, fd_set *errorfds, struct timeval *timeout);
-```
-接口函数定义：
-* maxfdp: 指集合中所有文件描述符的范围，即所有文件描述符的最大值+1
-* readfs、writefds、errorfds指向文件描述符集合的指针，分别检测输入、输出是否就绪和异常情况是否发生
-* timeout时select()的超时时间，控制着select的阻塞行为
-
-readfs、writefds、errorfds所指结构体都是保存结果的地方，在调用select之前，这些参数指向结构体必须初始化以包含我们所感兴趣的文件描述符集合。之后select会修改这些结构体，当其返回时他们包含的就是处于就绪态的文件描述符集合。
-
-
+![Alt text](../images/socket.png)
 socket通信实现步骤：
 Step 1：创建ServerSocket和Socket
 Step 2：打开连接到的Socket的输入/输出流
 Step 3：按照协议对Socket进行读/写操作
 Step 4：关闭输入输出流，以及Socket
-
 # socket的基本操作
 参考：
 [socket详解-博客](https://blog.csdn.net/gswwldp/article/details/73557998)
@@ -80,8 +51,16 @@ int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
 listen函数的第一个参数即为要监听的socket描述字，第二个参数为相应socket可以排队的最大连接个数。socket()函数创建的socket默认是一个主动类型的，listen函数将socket变为被动类型的，等待客户的连接请求。
 connect函数的第一个参数即为客户端的socket描述字，第二参数为服务器的socket地址，第三个参数为socket地址的长度。客户端通过调用connect函数来建立与TCP服务器的连接。
 
+listen系统调用将文件描述符sockfd引用的流socket标记为被动。
+connect系统调用将文件描述符sockfd引用的主动socket连接到地址通过addr和addrlen指定的监听socket上。
 ## accept函数
 TCP服务器端依次调用 socket，bind，listen之后，就会监听指定的socket地址。Tcp客户端依次调用socket，connect之后就想TCP服务器发送一个连接请求。TCP服务器监听到这个请求之后，就会调用accept函数取接收请求，这样就建立好连接。之后就可以开始网络I/O操作，即类同于普通文件的读写I/O操作。
+
+accept系统调用在文件描述符sockfd引用的监听流socket上接受一个接入连接。
+如果在调用accept时不存在未决的连接，那么调用就会阻塞直到有连接请求为止。
+
+理解accept()的关键点是它会创建一个新的socket，并且正式这个socket会与执行connect对等的socket进行连接。
+
 ```c
 int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 ```
@@ -93,6 +72,9 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 如果accept成功，那么返回值是由内核生成全新的sockfd，代表与返回客户的TCP连接。
 
 >注意：accept第一个参数为服务器创建的socket描述字，是服务器开始调用socket函数生成的， 称为**监听socket描述字**。而accpet函数返回的则是已连接socket描述字。
+
+
+![Alt text](../images/未决的socket连接.png)
 
 ## read,write函数
 
