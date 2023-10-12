@@ -87,7 +87,6 @@ recvmsg()/sendmsg()
 recvfrom()/sendto()
 ```
 
-
 ## close函数
 在服务器与客户端建立连接之后，会进行一些读写操作，完成了读写操作就要关闭相应的socket描述字，好比操作完打开的文件要调用fclose关闭打开的文件。
 ```c
