@@ -62,3 +62,4 @@ bus       dev       firmware  fsl_otp   module
 ![Alt text](./images/linux设备模型.png)
 
 ![Alt text](./images/字符设备驱动结构.png)
+
