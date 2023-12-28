@@ -33,6 +33,24 @@
 3. 结合项目任务同步积累。工作任务为引导，自学辅助，扩展广度，加强深度。
 
 
+linux：
+* 调度：参考LINUX内核实现原理，目前对于调度器在linux：
+    * 参考：https://github.com/gatieme/LDD-LinuxDeviceDrivers/blob/master/study/kernel/02-memory/04-buddy/02-initialization/README.md
+    * 深入linux内核架构
+* netstack：
+学习linux协议栈：
+1. 驱动部分：参考im6ull可以学习linux驱动，以及linux驱动实现流程
+2. linux内核--参考：嵌入式linux TCP/IP协议栈分析
+3.  网卡驱动流程
+4. linux中断处理分析--以网卡设备为例。
+5. 参照linux学习fuchsia实现流程
 
+
+网络协议栈学习：
+通过学习linux协议栈，可以学习网卡驱动、
+* 网卡驱动--驱动(参考：整点原子)
+* 中断处理--中断处理流程--gic和arm中断，linux中断原理 （韦东山驱动入门基础讲解）
+* 协议栈--linux协议栈，协议栈主要流程，协议栈分层设计 （参考PDF书）
+* TCP-UDP实例--系统调用流程（自己调试，提高认知）
 
 
