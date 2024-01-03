@@ -17,11 +17,22 @@ gPTP定义有两种设备类型，Time-aware-end Station和Time-aware Bridge。�
 为了测量更精准的时间，我们必须精准的知道一个MAC帧出去的时间，和收到一个MAC帧的时间，这个地方不能通过软件来获得，因为如果通过软件来获取时间，进出终端，任务抢占的时间是不确定的，不可测的。
 
 ## gPTP报文组成
+
 ### 三部分组成
 
 ### 报文头
 
+
 ### gptp报文类型
+
+gPTP协议中的报文被划分成为了报文级别（Message Class）和报文种类（Message Type）两个属性，其中报文级别的具体划分如下
+
+事件型报文（Event Massage）：这类报文的特点是设备在接收或发送事件类报文时，会对硬件计数器进行采样，将震荡周期计数值和时钟震荡频率以及基准时间相结合，生成一个时间戳。
+通用型报文（General Massage）：这类报文在设备接受或者发送时，不会触发硬件对硬件技术器的采样，不会生成时间戳。
+报文种类的划分以及对应的取值如下：
+
+![表1 报文类型对应的报文等级以及取值](image-6.png)
+表1 报文类型对应的报文等级以及取值
 
 ## 同步过程
 gPTP定义有两类报文，事件类型报文（包括Sync、Pdelay_Req、Pdelay_Resp三条）和一般类型报文（包括Follow_UP、Pdelay_Resp_Follow_UP二条）。gPTP定义设备工作在网络七层模型中的第二层数据链路层的MAC（Media Acess Control，媒介访问控制）子层。
@@ -43,12 +54,13 @@ gPTP定义有两类报文，事件类型报文（包括Sync、Pdelay_Req、Pdela
 6. 主端口发送Follow_UP报文，将T3值附在报文中发送。
 >从端口通过下图所示公式计算出自己与主端口时钟频率的偏差R。
 R = (T3-T1)/(T4-T2)
-![频率同步时序图](vx_images/132275295909144.png)
+
+![Alt text](image-1.png)
 
 #### 频率同步方案二
 频率同步复用传输延迟测量过程的Pdelay_Resp和Pdelay_Resp_Follow_UP报文。通过采用两组答复，最终可以获得t5,t6,t9,t10的值，由下面公式可得主从端口的频率比。 
 R=(t9-t5)/(t10-t6)
-![](vx_images/4213824595786.png =400x)
+![Alt text](image.png)
 
 此时主从端口频率同步的情况下，频率比等于1。如果大于1，说明主端口走得快，如果小于1，说明主端口走的慢。从端口根据频率比的值，调整自己的时基，从而获得正确的时间戳。
 
@@ -61,9 +73,9 @@ gPTP采用P2P（Peer to Peer）的方法来测量传输延迟。在P2P方法中�
 4. 从端口接收Pdelay_Resp报文，报文到达从端口MAC层时，触发从端口记录此时的时间戳T8。
 5. 主端口发送Pdelay_Resp_Follow_UP报文，将T7的值附在报文中发送。
 从端口通过下图公式即可算出相邻设备间的传输延迟delay。
-![](vx_images/548344909542474.png)
+![Alt text](image-3.png)
+![传输延迟测量时序图](image-2.png)
 
-![](vx_images/47006020668310.png)
 
 #### 补充分析：
 从端口首先发送Pdelay_Req报文，标志传输延迟测量的开始，在报文离开从端口MAC层时，触发从端口记录此时的时间戳t3。主端口MAC层收到Pdelay_Req报文后会记录此时的时间戳t4，随后，主端口通过Pdelay_Resp报文将值t4发送给从端口，同时在Pdelay_Resp报文离开主端口的MAC层时，触发主端口记录此时的时间戳t5，从端口MAC层收到Pdelay_Resp报文后记录此时的时间戳t6。随后，相同的套路，主端口通过Pdelay_Resp_Follow_Up报文将值t5发送给从端口。至此，一次传输延迟测量过程已经结束。在假设路径传输延迟是对称的前提下，可由如下公式计算相邻设备间的传输延迟。
@@ -77,10 +89,10 @@ gPTP定义的五条报文中，Sync和Follow_UP为一组报文，周期发送，
 3. 主端口发送Follow_UP报文，将T9值附在报文中发送。
 4. 从端口可以通过下述公式计算，根据本地时间戳Tb计算出主端口上的时间戳Ta，至此完成时间同步。
 
-![](vx_images/400765081826794.png)
+![Alt text](image-4.png)
 
 示意图：
-![时钟偏差测量](vx_images/78126213920934.png)
+![时钟偏差测量时序图](image-5.png)
 
 #### 补充分析：
 Sync由主端口发送，在报文离开主端口MAC层时，触发主端口记录此时的时间戳t1。从端口MAC层收到Sync报文后会记录此时的时间戳t2。随后，主端口将t1值附到Follow_UP报文里发送给从端口。
@@ -106,4 +118,3 @@ SLAVE有了这个时间该如何处理？
 [车载以太网之时间同步协议gPTP](https://zhuanlan.zhihu.com/p/101003490)
 https://zhuanlan.zhihu.com/p/455988582
 [TSN综述 – 广义时钟同步协议（gPTP)](https://blog.csdn.net/maimang1001/article/details/130215711?spm=1001.2101.3001.6650.2&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-2-130215711-blog-118806375.235%5Ev40%5Epc_relevant_3m_sort_dl_base1&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-2-130215711-blog-118806375.235%5Ev40%5Epc_relevant_3m_sort_dl_base1&utm_relevant_index=5)
-https://blog.csdn.net/maimang1001/article/details/130215711?spm=1001.2101.3001.6650.2&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-2-130215711-blog-118806375.235%5Ev40%5Epc_relevant_3m_sort_dl_base1&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-2-130215711-blog-118806375.235%5Ev40%5Epc_relevant_3m_sort_dl_base1&utm_relevant_index=5
