@@ -104,3 +104,6 @@ SLAVE有了这个时间该如何处理？
 [gPTP时间同步（时钟同步）协议对智能驾驶车载网络的重要性](https://zhuanlan.zhihu.com/p/455988582)
 [如何理解车载以太网之时间同步协议gptp](https://www.suncve.com/ruhelijiechezaiyitaiwangzhishijiantongbuxieyigptp/)
 [车载以太网之时间同步协议gPTP](https://zhuanlan.zhihu.com/p/101003490)
+https://zhuanlan.zhihu.com/p/455988582
+[TSN综述 – 广义时钟同步协议（gPTP)](https://blog.csdn.net/maimang1001/article/details/130215711?spm=1001.2101.3001.6650.2&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-2-130215711-blog-118806375.235%5Ev40%5Epc_relevant_3m_sort_dl_base1&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-2-130215711-blog-118806375.235%5Ev40%5Epc_relevant_3m_sort_dl_base1&utm_relevant_index=5)
+https://blog.csdn.net/maimang1001/article/details/130215711?spm=1001.2101.3001.6650.2&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-2-130215711-blog-118806375.235%5Ev40%5Epc_relevant_3m_sort_dl_base1&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-2-130215711-blog-118806375.235%5Ev40%5Epc_relevant_3m_sort_dl_base1&utm_relevant_index=5
