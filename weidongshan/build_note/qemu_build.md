@@ -12,7 +12,9 @@
 ### qemu使用主要两个目录
 #### 获取QEMU镜像
 在Ubuntu中执行以下命令：
+```shell
 git  clone  https://e.coding.net/weidongshan/ubuntu-18.04_imx6ul_qemu_system.git
+```
 
 #### kernel源码目录以及工具链
 考虑到代码仓库过多，特使用repo工具管理代码。
