@@ -1,6 +1,10 @@
 
 
-yocto主要目录及编译框架流程
+yocto主要目录及编译框架流程\
+仓库同步：
+git init 和git fetch
+参考：https://phoenixnap.com/kb/git-fetch
+
 目录结构
 
 编译框架
@@ -26,6 +30,9 @@ SOLUTION
 In order to remove this message in kernel logs, add the following bitbake variable in <plnx-proj-root>/project-spec/meta-user/conf/petalinuxbsp.conf
 SERIAL_CONSOLES_CHECK = "${SERIAL_CONSOLES}"
 ```
+
+
+
 主要指令：
 bitbake -c cleansstate xxxx
 
