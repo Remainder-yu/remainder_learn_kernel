@@ -46,3 +46,7 @@ https://blog.csdn.net/faihung/article/details/82699268
 https://blog.csdn.net/wangweiqiang1325/article/details/122195713?spm=1001.2101.3001.6650.2&utm_medium=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-2-122195713-blog-82699268.235%5Ev40%5Epc_relevant_3m_sort_dl_base1&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-2-122195713-blog-82699268.235%5Ev40%5Epc_relevant_3m_sort_dl_base1&utm_relevant_index=5
 
 https://fulinux.blog.csdn.net/article/details/108910914?spm=1001.2014.3001.5502
+
+
+指定自己的交叉编译工具链：
+参考官网。
