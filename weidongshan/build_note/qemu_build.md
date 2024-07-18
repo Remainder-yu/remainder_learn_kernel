@@ -82,7 +82,6 @@ QEMU中的zImage和100ask_imx6ul_qemu.dtb在哪？你安装我们提供的QEMU�
 
 
 
-
 # 配置开发环境
 
 
