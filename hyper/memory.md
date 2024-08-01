@@ -277,7 +277,7 @@ vmm_host_ram_color_alloc	从RAM中分配带有缓存颜色的物理空间
 vmm_host_ram_color_count	从RAM中获取Cache color数量
 vmm_host_ram_color_ops_name	从RAM中获取Cache color名字
 vmm_host_ram_color_order	
-vmm_host_ram_end	返回指定内存设备的结束地址
+vmm_host_ram_end			返回指定内存设备的结束地址
 vmm_host_ram_estimate_hksize	返回ram管理结构体大小
 vmm_host_ram_frame_isfree	判断指定的地址是否空闲
 vmm_host_ram_free	释放指定的地址空间
@@ -314,3 +314,4 @@ static int __init host_aspace_init_primary(void)
         -> 
 
 ```
+

@@ -41,7 +41,7 @@ book@100ask:~$ vi  ~/.bashrc
 ```shell
 export ARCH=arm
 export CROSS_COMPILE=arm-linux-gnueabihf-
-export PATH=$PATH:/home/remainder/weidongshan/100ask_imx6ull-qemu/ToolChain/gcc-linaro-6.2.1-2016.11-x86_64_arm-linux-gnueabihf/bin
+export PATH=$PATH:/home/yujuncheng/learn_remainder/weidongshan/100ask_imx6ull-qemu/ToolChain/gcc-linaro-6.2.1-2016.11-x86_64_arm-linux-gnueabihf/bin/
 ```
 
 完成以上交叉工具链设置完成进行内核编译。
@@ -60,6 +60,7 @@ remainder@remainder:~/weidongshan/100ask_imx6ull-qemu/linux-4.9.88/arch/arm/conf
 3. 编译配置文件：make 100ask_imx6ull_qemu_defconfig。文件目录内核源码arch/arm/configs/目录。
 4. make zImage -jN //编译zImage 内核镜像，其中N参数可以根据CPU个数，来加速编译系统。 
 5. make dtbs   //编译设备树文件
+
 ```shell
 book@100ask:~/100ask_imx6ull-qemu$ cd linux-4.9.88
 book@100ask:~/100ask_imx6ull-qemu/linux-4.9.88$ make mrproper
@@ -75,6 +76,25 @@ arch/arm/boot/dts/100ask_imx6ul_qemu.dtb    // 设备树
 如果你修改过内核，或是修改过设备树文件，那么可以用上面2个文件去替换QEMU中的zImage和100ask_imx6ul_qemu.dtb。
 QEMU中的zImage和100ask_imx6ul_qemu.dtb在哪？你安装我们提供的QEMU时，可以得到这样的脚本：qemu-imx6ul-gui.sh。打开它就可以知道这2个文件在哪里了。
 一般位于imx6ul-system-image目录下：
+
+### 编译中遇到的问题
+```bash
+https://blog.csdn.net/zhoukaiqili/article/details/126191871
+
+diff --git a/scripts/dtc/dtc-lexer.lex.c_shipped b/scripts/dtc/dtc-lexer.lex.c_shipped
+index ba525c2f..a2fe8dbc 100644
+--- a/scripts/dtc/dtc-lexer.lex.c_shipped
++++ b/scripts/dtc/dtc-lexer.lex.c_shipped
+@@ -637,7 +637,7 @@ char *yytext;
+ #include "srcpos.h"
+ #include "dtc-parser.tab.h"
+ 
+-YYLTYPE yylloc;
++extern YYLTYPE yylloc;
+ extern bool treesource_error;
+ 
+ /* CAUTION: this will stop working if we ever use yyless() or yyunput() */
+```
 
 ## 修改文件系统
 
