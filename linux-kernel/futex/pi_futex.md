@@ -63,5 +63,4 @@ write(1, " 406447 mutex lock and unlock we"..., 41 406447 mutex lock and unlock 
 ) = 41
 exit_group(0)                           = ?
 +++ exited with 0 +++
-
 ```
