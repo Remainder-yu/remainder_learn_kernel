@@ -315,3 +315,30 @@ static int __init host_aspace_init_primary(void)
 
 ```
 
+# 内存分配释放研究
+
+基于主机内存分配全部的物理内存为什么会系统crash？
+
+## vapool内存池
+
+vapool分配的大小需要与物理内存映射，所以分配物理内存，实际对应虚拟内存，而本身就VAPOOL House-Keeping Size 用于管理vapool。
+```cpp
+virtual_size_t __init vmm_host_vapool_estimate_hksize(virtual_size_t size)
+{
+	/* VAPOOL House-Keeping Size = (Total VAPOOL Size / 256);
+	 * 12MB VAPOOL   => 48KB House-Keeping
+	 * 16MB VAPOOL   => 64KB House-Keeping
+	 * 32MB VAPOOL   => 128KB House-Keeping
+	 * 64MB VAPOOL   => 256KB House-Keeping
+	 * 128MB VAPOOL  => 512KB House-Keeping
+	 * 256MB VAPOOL  => 1024KB House-Keeping
+	 * 512MB VAPOOL  => 2048KB House-Keeping
+	 * 1024MB VAPOOL => 4096KB House-Keeping
+	 * ..... and so on .....
+	 */
+	return size >> 8;
+}
+```
+存在的问题：
+Q1：分配内存时按照所有空闲大小进行分配，就会出现分配物理内存成功，然后进行host_memap映射错误？
+分析：主要原因是，分配全部物理内存，就会导致映射虚拟内存池本身需要管理空间，所以xvisor会崩，而分配内存的大小应该按照vapool内存池允许分配上限作为标准，而不是实际物理内存空闲大小。

@@ -64,3 +64,13 @@ write(1, " 406447 mutex lock and unlock we"..., 41 406447 mutex lock and unlock 
 exit_group(0)                           = ?
 +++ exited with 0 +++
 ```
+
+
+linux-pi-futex分析
+
+PI-futex操作的特殊规则：
+未获取锁时，futex字的值应为0。
+获取锁时，futex字的值应为拥有线程的线程ID（TID）。
+如果锁被拥有且有线程正在竞争锁，则在futex字的值中设置FUTEX_WAITERS位；即值是FUTEX_WAITERS | TID。
+
+用户空间操作：
