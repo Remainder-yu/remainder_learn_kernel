@@ -75,6 +75,12 @@ cp /mnt/u-boot-dtb.imx .
 ### 1.2.5. 开发板更新内核和设备树
 通过tftp和nfs，将对应更新的镜像文件放置开发板：boot目录。
 reboot重启即可更新。
+挂载成功后将已经拷贝到 Ubuntu nfs 目录中的内核、设备树文件拷贝到开
+发板/boot 目录下,替换掉原来的文件:
+[root@100ask:~]# cp /mnt/zImage /boot
+[root@100ask:~]# cp /mnt/100ask_imx6ull-14x14.dtb /boot
+[root@100ask:~]# sync
+
 
 ### 1.2.6. 开发板使用NFS根文件系统（更新文件系统）
 Buildroot 编译完成之后生成的 rootfs.tar.bz2,可以解压之后放到 NFS 服务器上作为 NFS 文件系统供开发板使用。使用 NFS 文件系统,便于程序的开发调试。所谓 NFS 服务器,就是我们在 VMWare 上运行的 Ubuntu。
