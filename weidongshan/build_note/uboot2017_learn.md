@@ -435,7 +435,7 @@ ENDPROC(relocate_vectors)
 初始化hush解析器（CONFIG_HUSH_PARSER），用环境变量“bootdelay”或设备树config的属性bootdelay作为启动延迟时间，通过hush解析控制台输入的内容打断倒计时进入命名行；倒计时期间控制台无输入则执行环境变量或设备树/config节点的bootcmd，最后执行命令bootm address.
 
 ## bootm ${address} 启动linux内核
-
+```shell
   1. do_bootm(...)执行该命令，作命令的解析；
   2. do_bootm_states(...)，如下内容：
   3. bootm_start()：环境变量verify决定后续是否对kernel镜像进行校验和检查，lmb(logical memory blocks)相关内
@@ -460,7 +460,7 @@ ENDPROC(relocate_vectors)
     关L1/2 D-cache和MMU，冲刷掉dcache内数据；关I-cache，失效I-cache内条目，失效整个分支预测器阵列；
     执行数据和指令内存屏障，确保前面的操作完成；
    (3) kernel_entry(0, machid, r2)：参数r2传递启动参数（tag或设备树）的内存地址，正式跳转到kernel。
-
+```
 ### do_bootm_linux函数
 kernel_entry， 并不是uboot定义的，
 
