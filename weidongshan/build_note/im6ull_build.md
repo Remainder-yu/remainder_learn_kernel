@@ -37,6 +37,7 @@ book@100ask:~/100ask_imx6ull-qemu/linux-4.9.88$ make mrproper
 book@100ask:~/100ask_imx6ull-qemu/linux-4.9.88$ make 100ask_imx6ull_qemu_defconfig
 book@100ask:~/100ask_imx6ull-qemu/linux-4.9.88$ make zImage -jN //编译zImage 内核镜像，其中N参数可以根据CPU个数，来加速编译系统。
 book@100ask:~/100ask_imx6ull-qemu/linux-4.9.88$ make dtbs   //编译设备树文件
+make 100ask_imx6ull_defconfig
 
 #!/bin/bash
 # configs/mx6ul_14x14_evk_emmc_defconfig
@@ -76,4 +77,23 @@ export PATH=$PATH:/home2/yujuncheng/linux_build_and_weidongshan/100ask_imx6ull-s
 # cp /home/yujuncheng/remainder_linux_learn/qemu-arm-mcimx6ul-evk/configs/linux_v5.4_defconfig .config
 make linux_v5.4_defconfig
 make zImage -j36
+```
+
+# imx6ull-100ask-board
+
+```shell
+make 100ask_imx6ull_defconfig
+/home/yujuncheng/data/manifests/100ask_imx6ull_old/ToolChain/gcc-linaro-6.2.1-2016.11-x86_64_arm-linux-gnueabihf
+
+#!/bin/bash
+# configs/mx6ul_14x14_evk_emmc_defconfig
+CROSS_PATH="/home/yujuncheng/data/manifests/100ask_imx6ull_old/ToolChain/gcc-linaro-6.2.1-2016.11-x86_64_arm-linux-gnueabihf"
+export ARCH=arm
+export CROSS_COMPILE=arm-linux-gnueabihf-
+export PATH=$PATH:$CROSS_PATH/bin
+make mrproper
+make 100ask_imx6ull_defconfig
+make zImage -j8
+
+
 ```
