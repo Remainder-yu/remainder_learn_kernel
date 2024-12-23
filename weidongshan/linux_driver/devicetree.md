@@ -7,6 +7,10 @@ dtc -I dts -O dtb 100ask_imx6ull_qemu.dts -o 100ask_imx6ull_qemu_re.dtb
 
 dtc -I dtb -O dts vexpress-v2p-ca9.dtb -o vexpress-v2p-ca9_0603.dts
 dtc -I dts -O dtb vexpress-v2p-ca9_0603.dts -o vexpress-v2p-ca9_0603.dtb
+
+# 100ask_board
+arch/arm/boot/dts/100ask_imx6ull-14x14.dts
+
 ```
 
 启动linux：
