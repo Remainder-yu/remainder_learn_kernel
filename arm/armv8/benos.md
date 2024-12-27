@@ -24,6 +24,73 @@ index f0f2a7d..acc4f7f 100644
  QEMU_FLAGS  += -machine raspi4
 ```
 
+# 《ARM64体系结构：编程与实践》例程学习
+```shell
+git clone https://gitee.com/benshushu/arm64_programming_practice.git
+```
+## 修改 makefile
+```shell
+[remainder@ubuntu lab12-1]$ git diff Makefile
+diff --git a/chapter_12/lab12-1/Makefile b/chapter_12/lab12-1/Makefile
+index 77736a4..921cf17 100644
+--- a/chapter_12/lab12-1/Makefile
++++ b/chapter_12/lab12-1/Makefile
+@@ -1,17 +1,19 @@
+-ARMGNU ?= aarch64-linux-gnu
++ARMGNU = /home/yujuncheng/aarch64_gcc12.2.0_glibc2.36.0_fp/bin/aarch64-linux-gnu
++QEMU_PATH = /home/yujuncheng/qemu_path/
++board = rpi3
+
+ board ?= rpi4
+
+ ifeq ($(board), rpi3)
+ COPS += -DCONFIG_BOARD_PI3B
+-QEMU_FLAGS  += -machine raspi3
++QEMU_FLAGS  += -machine raspi3b
+ else ifeq ($(board), rpi4)
+ COPS += -DCONFIG_BOARD_PI4B
+ QEMU_FLAGS  += -machine raspi4
+ endif
+
+ COPS += -g -Wall -nostdlib -Iinclude -mgeneral-regs-only
+-ASMOPS = -g -Iinclude
++ASMOPS = -g -Iinclude
+
+ BUILD_DIR = build
+ SRC_DIR = src
+@@ -19,7 +21,7 @@ SRC_DIR = src
+ all : benos.bin
+
+ clean :
+-       rm -rf $(BUILD_DIR) *.bin *.elf *.map
++       rm -rf $(BUILD_DIR) *.bin *.elf *.map
+
+ $(BUILD_DIR)/%_c.o: $(SRC_DIR)/%.c
+        mkdir -p $(@D)
+@@ -44,6 +46,6 @@ benos.bin: $(SRC_DIR)/linker.ld $(OBJ_FILES)
+ QEMU_FLAGS  += -nographic
+
+ run:
+-       qemu-system-aarch64 $(QEMU_FLAGS) -kernel benos.bin
++       $(QEMU_PATH)/qemu-system-aarch64 $(QEMU_FLAGS) -kernel benos.bin
+ debug:
+-       qemu-system-aarch64 $(QEMU_FLAGS) -kernel benos.bin -S -s
++       $(QEMU_PATH)/qemu-system-aarch64 $(QEMU_FLAGS) -kernel benos.bin -S -s
+[remainder@ubuntu lab12-1]$
+```
+
+## GDB调试手段
+
+```shell
+make debug
+/home/yujuncheng/aarch64_gcc12.2.0_glibc2.36.0_fp/bin/aarch64-linux-gnu-gdb --tui build/benos.elf
+gdb --tui build/benos.elf
+
+# GDB
+target remote localhost:1234
+b _start
+c
+```
 
 ## qemu+gdb调试
 
