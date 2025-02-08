@@ -1,4 +1,4 @@
-# 物理内存初始化--伙伴系统前夕
+# 1. 物理内存初始化--伙伴系统前夕
 
 本文主要内容：
 介绍memblock建立过程及分页机制初始化，主要步骤包括：
@@ -14,14 +14,14 @@
 * unflatten_device_tree: dtb转换为device_node tree
 * 根据device node tree初始化CPU，psci
 
-## linux内存管理--概述
+## 1.1. linux内存管理--概述
 
 linux内存管理主要分为3个阶段：
 1. mmu未打开，汇编时代
 2. fixmap\memblock时代：此时伙伴系统还没有成形，一直到mm_init函数中的mem_init将空闲内存加载到zone中。
 3. 伙伴系统建立
 
-### start_kernel
+### 1.1.1. start_kernel
 
 start_kernel中内存管理相关的系统初始化函数主要如下：
 ```shell
@@ -58,7 +58,7 @@ start_kernel中内存管理相关的系统初始化函数主要如下：
 
 
 
-## 1. 设备树解析，收集内存信息
+## 1.2. 设备树解析，收集内存信息
 内核启动过程中，需要解析这些DTS文件，实现代码如下：
 ```c
 /*
@@ -98,7 +98,7 @@ int __init_memblock memblock_add(phys_addr_t base, phys_addr_t size)
 
 
 
-## 2. 物理内存初始化
+## 1.3. 物理内存初始化
 参考文献：
 [linux物理内存初始化](https://www.cnblogs.com/LoyenWang/p/11440957.html)
 奔跑吧，linux内核
@@ -123,9 +123,9 @@ dts文件的同学应该见过memory的节点，这个节点描述了内存的�
 Uboot会将kernel image和dtb拷贝至内存中，并且将dtb物理地址告知kernel，kernel需要从该物理地址上读取到dtb文件解析，才能得到最终的内存信息，dtb的物理地址需要映射到虚拟地址上才能访问，但是这个时候paging_init还没有调用，也就是说物理地址的映射还没有完成。此时，使用什么机制实现呢？---fixed map
 在物理内存添加进系统后，在mm_init之前，系统会使用memblock模块对内存进行管理。
 
-### 2.1. memblock分配器
+### 1.3.1. memblock分配器
 
-#### 2.1.1. 数据结构
+#### 1.3.1.1. 数据结构
 
 ```cpp
 /**
@@ -182,7 +182,7 @@ enum memblock_flags {
 ```
 成员base是起始物理地址，size是长度，nid是节点编号。成员flags是标志，可以是以上枚举结构体内的值。
 
-#### 2.1.2. memblock主要接口及算法
+#### 1.3.1.2. memblock主要接口及算法
 
 ```shell
 memblock_add：添加新的内存块区域到memblock.memory中。
@@ -200,7 +200,7 @@ memblock_alloc负责分配内存，把主要工作委托给函数memblock_alloc_
 函数memblock_free负责释放内存，只需要把内存块区域从memblock.reserved中删除。
 
 
-#### 2.1.3. 初始化
+#### 1.3.1.3. 初始化
 
 在/mm/memblock.c定义了全局变量memblock，把成员bottom_up初始化为假，表示从高地址向下分配。
 
@@ -237,7 +237,7 @@ ARM64内核初始化memblock分配器的过程是：
 ```
 
 当物理内存都添加进系统之后，arm64_memblock_init会对整个物理内存进行整理，主要工作就是将一些特殊的区域添加进reserved内存中。
-##### 2.1.3.1. 在arm64_memblock_init接口中主要执行动作：
+##### 1.3.1.3.1. 在arm64_memblock_init接口中主要执行动作：
 1. 调用fdt_enforce_memory_region解析设备树二进制文件中节点`/chosen`的属性“linux,usable-memory-range”,得到可用内存范围，超出这个范围的物理内存范围从memblock.memory中删除。
 2. 把线性映射区域不能覆盖的物理内存范围从memblock.memory中删除。
 3. 设备树中节点`/chosen`属性`bootargs`指定的命令行中，可以使用参数`mem`指定可用内存大小。如果指定了内存的大小，name把超过可用长度的物理地址范围从memblock.memory中删除。因为内核镜像可以加载到内存的高地址部分，并且内核镜像必须是可以通过线性映射区域访问的，所以需要把内核镜像占用的物理内存重新添加到memblock.memory中。
@@ -245,7 +245,7 @@ ARM64内核初始化memblock分配器的过程是：
 5. 从设备树二进制文件中的内存区域（memory reserve map，对应设备树源文件的字段“memreserve/”）和节点/reserved-memory读取保留的物理内存范围，再添加到memblock.reserved中。
 
 
-##### 2.1.3.2. 解析设备树流程：
+##### 1.3.1.3.2. 解析设备树流程：
 
 核心调用流程：
 ```cpp
@@ -327,7 +327,7 @@ void __init early_init_dt_scan_nodes(void)
 然后结合上述的物理内存映射分析。
 
 
-## 3. 物理内存映射--（在物理内存初始化流程之后）
+## 1.4. 物理内存映射--（在物理内存初始化流程之后）
 
 在内核使用内存前，需要初始化内核的页表，初始化页表主要由`pageing_init`函数实现。
 
@@ -357,7 +357,7 @@ void __init paging_init(void)
 // 但是映射的地址不一样
 
 ```
-### 3.1. map_kernel函数分析：
+### 1.4.1. map_kernel函数分析：
 该函数对内核的各个段分别进行映射，映射至内核空间的虚拟地址为vmalloc区域。
 例如：vmalloc区域的范围从0xFFFF 0000 1000 0000到0xFFFF 7DFF BFFF 0000。
 
@@ -390,14 +390,37 @@ static void __init map_kernel(pgd_t *pgdp)
 	map_kernel_segment(pgdp, _data, _end, PAGE_KERNEL, &vmlinux_data, 0, 0);
 }
 ```
-### 3.2. map_mem函数分析：
+### 1.4.2. map_mem函数分析：
 映射物理内存至线性映射区：
 
-## 4. 伙伴子系统
+
+
+## 1.5. 伙伴子系统
+
+memblock初始化后，此时有两个结构体记录了所有的区域。接下来就是memblock如何将这些区域通过调用伙伴系统的接口释放给伙伴系统的链表。同时将保留的页面属性进行设置reserved，从而保证不被访问。
+
+
+内核初始化完，使用分配器管理物理页，当前使用的也分配器是伙伴分配器。
+伙伴分配器分配和释放物理页的数量单位是阶。
+
+```cpp
+void __init mem_init(void) //arch/arm64/mm/init.c
+-> memblock_free_all(); // 释放所有低端内促到伙伴系统中，计算释放总的页数
+	-> pages = free_low_memory_core_early();
+	 -> count += __free_memory_core(start, end);
+	 	-> __free_pages_memory(start_pfn, end_pfn);
+			-> memblock_free_pages(pfn_to_page(start), start, order);
+				-> return __free_pages_boot_core(page, order);
+					-> __free_pages(page, order);
+```
+Q:物理地址页面如何添加至伙伴系统的链表上？
+A：释放内存用到的接口：__free_pages(page, order);函数只需要将物理地址start通过pfn_to_page(start)函数进行转换获取到page的指针和order，然后根据order和page以及页面的迁移类型，然后添加到各自的链表上。
+
+### 1.5.1. 伙伴分配器
 
 
 
-## 5. 学习技巧
+## 1.6. 学习技巧
 
 early_init_dt_scan_memory -- 作为回调函数调用方法：
 
@@ -442,7 +465,7 @@ int __init of_scan_flat_dt(int (*it)(unsigned long node,
 ```
 
 
-## 6. memblock如何释放内存给伙伴系统？
+## 1.7. memblock如何释放内存给伙伴系统？
 
 https://blog.csdn.net/LuckyDog0623/article/details/141573584
 
@@ -516,7 +539,7 @@ __free_memory_core
 			-> __free_pages(page, order);
 ```
 
-### 6.1. 如何释放内存给伙伴系统？
+### 1.7.1. 如何释放内存给伙伴系统？
 
 为什么说memblock_free_all函数调用可以直接将可用的内存区域释放给伙伴系统？
 mem_init -> memblock_free_all ->释放所有低端内存到伙伴系统中，计算释放总的页数。在这个过程中，通过for_each_reserved_mem_range函数遍历所有的reserved区。memory区也同理。
