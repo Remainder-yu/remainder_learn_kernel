@@ -27,6 +27,16 @@ export PATH=$PATH:/home/yujuncheng/weidongshan/ToolChain/gcc-linaro-6.2.1-2016.1
 make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- CROSS_COMPILE=arm-linux-gnueabihf- distclean
 make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- CROSS_COMPILE=arm-linux-gnueabihf- mx6ul_14x14_evk_defconfig
 make -s ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j36
+
+#!/bin/bash
+# configs/100ask_imx6ull_defconfig
+export ARCH=arm
+export CROSS_COMPILE=arm-linux-gnueabihf-
+export PATH=$PATH:/home/yujuncheng/data/manifests/100ask_imx6ull_old/ToolChain/gcc-linaro-6.2.1-2016.11-x86_64_arm-linux-gnueabihf/bin
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- CROSS_COMPILE=arm-linux-gnueabihf- distclean
+make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- CROSS_COMPILE=arm-linux-gnueabihf- 100ask_imx6ull_pro_defconfig
+make -s ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j16
+
 ```
 
 # linux编译：
@@ -50,6 +60,14 @@ cp /home/yujuncheng/remainder_linux_learn/qemu-arm-mcimx6ul-evk/configs/linux_v5
 make linux_v5.4_defconfig
 make zImage -j36
 
+#!/bin/bash
+export ARCH=arm
+export CROSS_COMPILE=arm-linux-gnueabihf-
+export PATH=$PATH:/home/yujuncheng/data/ToolChain/gcc-linaro-6.2.1-2016.11-x86_64_arm-linux-gnueabihf/bin
+
+make mrproper
+make 100ask_imx6ull_defconfig
+make zImage -j36
 ```
 
 # qemu-imx6ull官方
@@ -95,5 +113,8 @@ make mrproper
 make 100ask_imx6ull_defconfig
 make zImage -j8
 
-
+git clone https://e.coding.net/codebug8/repo.git
+mkdir -p 100ask_imx6ull-sdk && cd 100ask_imx6ull-sdk
+../repo/repo init -u https://gitee.com/weidongshan/manifests.git -b linux-sdk -m imx6ull/100ask_imx6ull_linux4.9.88_release.xml --no-repo-verify
+../repo/repo sync -j4
 ```
