@@ -303,3 +303,234 @@ Err:          0
 
 ```
 struct irq_domain用于描述一个中断控制器。GIC中断控制器在初始化时解析DTS信息中定义了几个GIC控制器，每个GIC控制器注册一个struct irq_domain数据结构。
+
+
+
+系统初始化时,do_initcalls()函数会调用系统中所有的initcall 回调函数进行初始化,其中of_platform_default_populate_init()函数定义为arch_initcall_sync类型的初始化函数。
+
+```cpp
+static int __init of_platform_default_populate_init(void)
+{
+	struct device_node *node;
+
+	device_links_supplier_sync_state_pause();
+
+	if (!of_have_populated_dt())
+		return -ENODEV;
+
+	/*
+	 * Handle certain compatibles explicitly, since we don't want to create
+	 * platform_devices for every node in /reserved-memory with a
+	 * "compatible",
+	 */
+	for_each_matching_node(node, reserved_mem_matches)
+		of_platform_device_create(node, NULL, NULL);
+
+	node = of_find_node_by_path("/firmware");
+	if (node) {
+		of_platform_populate(node, NULL, NULL, NULL);
+		of_node_put(node);
+	}
+
+	/* Populate everything else. */
+	of_platform_default_populate(NULL, NULL, NULL);
+
+	return 0;
+}
+arch_initcall_sync(of_platform_default_populate_init);  // 系统初始化时，会调用系统中所有的initcall回调函数进行初始化
+
+int of_platform_default_populate(struct device_node *root,
+				 const struct of_dev_auxdata *lookup,
+				 struct device *parent)
+{
+	return of_platform_populate(root, of_default_bus_match_table, lookup,
+				    parent);
+}
+EXPORT_SYMBOL_GPL(of_platform_default_populate);
+
+-> of_platform_populate
+	-> of_platform_bus_create(child, matches, lookup, parent, true);
+		-> of_device_is_compatible(bus, "arm,primecell")) { // 当匹配"arm,primecell"设备
+		-> of_amba_device_create(bus, bus_id, platform_data, parent);
+			-> 继续分析调用链？
+```
+
+上述代码是怎么解析DTS？完成串口0硬件中断号，并返回linux内核的IRQ号，并保存到amab_device数据结构的irq数组中。串口驱动在pl011_probe函数中直接从
+dev->irq[0]中获取IRQ号。
+
+```cpp
+drivers/tty/serial/amba-pl011.c
+static int pl011_probe(struct amba_device *dev, const struct amba_id *id)
+-> uap->port.irq = dev->irq[0]; // 获取对应的软件中断号
+// 可以添加调试信息，查看软件中断号
+
+```
+
+分析硬件中断号怎么映射至Linux内核的IRQ。
+SOC内部有多个中断控制器。在一些复杂的soc中，多个中断控制器还可以级联成一个树状结构，因此irq_domain管理框架。irq_domain可以支持多个中断控制器，并且完美地支持设备树机制，解决硬件中断号至Linux内核的IRQ号的问题。
+
+### irq_domain数据结构描述
+```cpp
+struct irq_domain {
+	struct list_head link; // 用于将irq_domain连接到全局链表irq_domain_list
+	const char *name; // 中断控制器名字
+	const struct irq_domain_ops *ops; // irq_domain 映射操作使用的方法集合
+	void *host_data;
+	unsigned int flags;
+	unsigned int mapcount;
+
+	/* Optional data */
+	struct fwnode_handle *fwnode;
+	enum irq_domain_bus_token bus_token;
+	struct irq_domain_chip_generic *gc;
+#ifdef	CONFIG_IRQ_DOMAIN_HIERARCHY
+	struct irq_domain *parent;
+#endif
+
+	/* reverse map data. The linear map gets appended to the irq_domain */
+	irq_hw_number_t hwirq_max; // 该irq domain支持中断数量的最大值
+	unsigned int revmap_size; // 线性映射的大小
+	struct radix_tree_root revmap_tree;  // Redix Tree 映射的根节点
+	struct mutex revmap_mutex;
+	struct irq_data __rcu *revmap[]; // 线性映射用到的lookup table
+};
+```
+
+GIC在初始化解析DTS信息定义了几个GIC，每个GIC注册一个irq_domain数据结构。中断控制器的驱动代码在drivers/irqchip目录下。
+
+```cpp
+IRQCHIP_DECLARE(cortex_a15_gic, "arm,cortex-a15-gic", gic_of_init);
+int __init
+gic_of_init(struct device_node *node, struct device_node *parent)
+{
+	struct gic_chip_data *gic;
+	int irq, ret;
+
+	if (WARN_ON(!node))
+		return -ENODEV;
+
+	if (WARN_ON(gic_cnt >= CONFIG_ARM_GIC_MAX_NR))
+		return -EINVAL;
+
+	gic = &gic_data[gic_cnt];
+
+	ret = gic_of_setup(gic, node);
+	if (ret)
+		return ret;
+
+	/*
+	 * Disable split EOI/Deactivate if either HYP is not available
+	 * or the CPU interface is too small.
+	 */
+	if (gic_cnt == 0 && !gic_check_eoimode(node, &gic->raw_cpu_base))
+		static_branch_disable(&supports_deactivate_key);
+
+	ret = __gic_init_bases(gic, &node->fwnode);
+	if (ret) {
+		gic_teardown(gic);
+		return ret;
+	}
+
+	if (!gic_cnt) {
+		gic_init_physaddr(node);
+		gic_of_setup_kvm_info(node);
+	}
+
+	if (parent) {
+		irq = irq_of_parse_and_map(node, 0);
+		gic_cascade_irq(gic_cnt, irq);
+	}
+
+	if (IS_ENABLED(CONFIG_ARM_GIC_V2M))
+		gicv2m_init(&node->fwnode, gic_data[gic_cnt].domain);
+
+	gic_cnt++;
+	return 0;
+}
+// 调用链
+-> ret = __gic_init_bases(gic, &node->fwnode);
+	-> ret = gic_init_bases(gic, handle);
+		-> 	if (handle) {		/* DT/ACPI */
+		gic->domain = irq_domain_create_linear(handle, gic_irqs,
+						       &gic_irq_domain_hierarchy_ops,
+						       gic); //主要是向系统中注册一个irq domain的数据结构
+			-> return __irq_domain_add(fwnode, size, size, 0, ops, host_data);
+				-> list_add(&domain->link, &irq_domain_list);
+static const struct irq_domain_ops gic_irq_domain_hierarchy_ops = {
+	.translate = gic_irq_domain_translate,
+	.alloc = gic_irq_domain_alloc,
+	.free = irq_domain_free_irqs_top,
+};
+
+static int gic_irq_domain_translate
+-> 		case 0:			/* SPI */
+			*hwirq = fwspec->param[1] + 32;
+			break;
+
+// 实现IRQ与硬件中断号映射的核心
+virq = irq_domain_alloc_irqs(domain, 1, NUMA_NO_NODE, fwspec);
+-> __irq_domain_alloc_irqs
+	-> virq = irq_domain_alloc_descs(irq_base, nr_irqs, 0, node,
+		->  __irq_alloc_descs
+			-> alloc_descs(start, cnt, node, affinity, owner);
+				->
+
+```
+
+
+### 中断处理
+
+```cpp
+arch/arm/kernel/entry-armv.S
+/*
+ * Interrupt handling.
+ */
+	.macro	irq_handler
+#ifdef CONFIG_GENERIC_IRQ_MULTI_HANDLER
+	mov	r0, sp
+	bl	generic_handle_arch_irq
+#else
+	arch_irq_handler_default
+#endif
+
+/**
+ * generic_handle_arch_irq - root irq handler for architectures which do no
+ *                           entry accounting themselves
+ * @regs:	Register file coming from the low-level handling code
+ */
+asmlinkage void noinstr generic_handle_arch_irq(struct pt_regs *regs)
+{
+	struct pt_regs *old_regs;
+
+	irq_enter();
+	old_regs = set_irq_regs(regs);
+	handle_arch_irq(regs);
+	set_irq_regs(old_regs);
+	irq_exit();
+}
+
+handle_arch_irq(regs);
+->
+```
+
+在GICV2驱动初始化时使handle_arch_irq指向gic_handle_irq函数：
+```cpp
+ __gic_init_bases
+ -> set_handle_irq(gic_handle_irq);
+	-> generic_handle_domain_irq(gic->domain, irqnr);
+		-> handle_irq_desc(irq_resolve_mapping(domain, hwirq));
+			-> generic_handle_irq_desc(desc);
+				-> desc->handle_irq(desc);
+// set_handle_irq函数主要是调用desc->handle_irq(desc);
+// 对于GIC的SPI类型中断来说，调用handle_fasteoi_irq函数
+
+		irq_domain_set_info(d, irq, hw, &gic->chip, d->host_data,
+				    handle_fasteoi_irq, NULL, NULL);
+-> void handle_fasteoi_irq(struct irq_desc *desc)
+	-> handle_irq_event(desc);
+		-> ret = handle_irq_event_percpu(desc);`
+			-> retval = __handle_irq_event_percpu(desc, &flags);
+				-> retval = __handle_irq_event_percpu(desc, &flags);
+					-> __irq_wake_thread(desc, action);
+
+```
