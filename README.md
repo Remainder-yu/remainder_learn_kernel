@@ -16,7 +16,8 @@ linux-内存管理
 # driver
 网卡驱动+中断流程+协议栈处理
 
-imx6ull+weidongshan
+# imx6ull+weidongshan
+
 https://e.coding.net/weidongshan/linux/doc_and_source_for_drivers.git
 
 https://e.coding.net/weidongshan/01_all_series_quickstart.git
