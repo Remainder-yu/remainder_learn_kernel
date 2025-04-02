@@ -510,11 +510,15 @@ asmlinkage void noinstr generic_handle_arch_irq(struct pt_regs *regs)
 }
 
 handle_arch_irq(regs);
-->
+
+//
+void (*handle_arch_irq)(struct pt_regs *) __ro_after_init;
 ```
 
 在GICV2驱动初始化时使handle_arch_irq指向gic_handle_irq函数：
 ```cpp
+IRQCHIP_DECLARE(cortex_a15_gic, "arm,cortex-a15-gic", gic_of_init);
+gic_of_init
  __gic_init_bases
  -> set_handle_irq(gic_handle_irq);
 	-> generic_handle_domain_irq(gic->domain, irqnr);
@@ -532,5 +536,53 @@ handle_arch_irq(regs);
 			-> retval = __handle_irq_event_percpu(desc, &flags);
 				-> retval = __handle_irq_event_percpu(desc, &flags);
 					-> __irq_wake_thread(desc, action);
+						-> wake_up_process(action->thread);
 
 ```
+
+### 中断线程化
+中断线程化就是使用内核线程处理中断，目的是减少系统关中断的时间，增强系统的实时性。
+在上面中断处理程序中，函数__handle_irq_enevt_percpu遍历中断描述符的中断处理链表，执行每个中断处理描述符的处理函数。如果处理函数返回IRQ_WAKE_THREAD，说明是线程化的中断，name唤醒中断处理线程。
+
+中断处理线程的处理函数是irq_thread(),调用函数irq_thread_fn,然后irq_thread_fn调用注册的线程处理函数。
+```cpp
+static int
+setup_irq_thread(struct irqaction *new, unsigned int irq, bool secondary)
+{
+	struct task_struct *t;
+
+	if (!secondary) {
+		t = kthread_create(irq_thread, new, "irq/%d-%s", irq,
+				   new->name);
+	} else {
+		t = kthread_create(irq_thread, new, "irq/%d-s-%s", irq,
+				   new->name);
+	}
+	................
+}
+
+static int irq_thread(void *data)
+-> handler_fn = irq_thread_fn;
+	->
+
+static irqreturn_t irq_thread_fn(struct irq_desc *desc,
+		struct irqaction *action)
+{
+	irqreturn_t ret;
+
+	ret = action->thread_fn(action->irq, action->dev_id);
+	if (ret == IRQ_HANDLED)
+		atomic_inc(&desc->threads_handled);
+
+	irq_finalize_oneshot(desc, action);
+	return ret;
+}
+
+// 主要是：ret = action->thread_fn(action->irq, action->dev_id);
+
+```
+
+
+参考文献：
+https://blog.csdn.net/weixin_43512663/article/details/123221060
+https://blog.csdn.net/weixin_43512663/article/details/123307434
